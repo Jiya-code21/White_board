@@ -14,14 +14,19 @@ export default function Board({ roomId = "room1" }) {
   const [current, setCurrent] = useState(null);
   const drawingRef = useRef(false);
 
-  const [tool, setTool] = useState("select"); 
+  const [tool, setTool] = useState("select");
+
   const [strokeColor, setStrokeColor] = useState("#111827");
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [showPicker, setShowPicker] = useState(false);
 
   const [dragInfo, setDragInfo] = useState(null);
 
+  // ⭐ NEW: Text input state
+  const [textInput, setTextInput] = useState(null);
+
   const PALETTE = ["#111827", "#ef4444", "#16a34a", "#2563eb", "#f59e0b", "#6b7280"];
+
 
   /* ---------------------- SOCKET ---------------------- */
   useEffect(() => {
@@ -46,6 +51,7 @@ export default function Board({ roomId = "room1" }) {
     };
   }, [roomId]);
 
+
   /* ---------------------- CANVAS SETUP ---------------------- */
   useEffect(() => {
     const c = canvasRef.current;
@@ -68,6 +74,7 @@ export default function Board({ roomId = "room1" }) {
 
   useEffect(() => renderAll(), [shapes, current]);
 
+
   /* ---------------------- RENDER ---------------------- */
   function renderAll() {
     const canvas = canvasRef.current;
@@ -78,6 +85,7 @@ export default function Board({ roomId = "room1" }) {
     shapes.forEach((s) => drawShape(ctx, s));
     if (current) drawShape(ctx, current);
   }
+
 
   /* ---------------------- DRAW SHAPES ---------------------- */
   function drawShape(ctx, s) {
@@ -140,6 +148,7 @@ export default function Board({ roomId = "room1" }) {
     ctx.restore();
   }
 
+
   function drawArrow(ctx, x1, y1, x2, y2) {
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -156,6 +165,7 @@ export default function Board({ roomId = "room1" }) {
     ctx.fill();
   }
 
+
   /* ---------------------- HELPERS ---------------------- */
   function getPos(e) {
     const rect = canvasRef.current.getBoundingClientRect();
@@ -168,10 +178,10 @@ export default function Board({ roomId = "room1" }) {
   function isInsideCircle(s, p) {
     return Math.hypot(p.x - s.x, p.y - s.y) <= s.r;
   }
-
   function isInsideText(s, p) {
     return p.x >= s.x - 50 && p.x <= s.x + 50 && p.y >= s.y - 20 && p.y <= s.y + 20;
   }
+
 
   /* ---------------------- MOUSE DOWN ---------------------- */
   function handleMouseDown(e) {
@@ -215,23 +225,13 @@ export default function Board({ roomId = "room1" }) {
       return;
     }
 
-    /* ----- TEXT TOOL (click to type) ----- */
+    /* ----- TEXT TOOL — NO PROMPT, DIRECT INPUT BOX ----- */
     if (tool === "text") {
-      const text = prompt("Type text:");
-      if (!text) return;
-
-      const shape = {
-        id: uid("t_"),
-        type: "text",
+      setTextInput({
         x: p.x,
         y: p.y,
-        text,
-        color: strokeColor,
-        fontSize: 20,
-      };
-
-      setShapes((x) => [...x, shape]);
-      socket.emit("shape:create", { roomId, shape });
+        value: "",
+      });
       return;
     }
 
@@ -287,6 +287,7 @@ export default function Board({ roomId = "room1" }) {
     }
   }
 
+
   /* ---------------------- MOUSE MOVE ---------------------- */
   function handleMouseMove(e) {
     const p = getPos(e);
@@ -333,6 +334,7 @@ export default function Board({ roomId = "room1" }) {
     }
   }
 
+
   /* ---------------------- MOUSE UP ---------------------- */
   function handleMouseUp() {
     if (dragInfo) {
@@ -349,6 +351,7 @@ export default function Board({ roomId = "room1" }) {
     socket.emit("shape:create", { roomId, shape: finalized });
     setCurrent(null);
   }
+
 
   /* ---------------------- DOUBLE CLICK: EDIT TEXT ---------------------- */
   function handleDoubleClick(e) {
@@ -372,11 +375,13 @@ export default function Board({ roomId = "room1" }) {
     }
   }
 
+
   /* ---------------------- CLEAR ---------------------- */
   function clearBoard() {
     setShapes([]);
     socket.emit("board:clear", roomId);
   }
+
 
   /* ---------------------- UI ---------------------- */
   function pickTool(t) {
@@ -384,9 +389,52 @@ export default function Board({ roomId = "room1" }) {
     setShowPicker(false);
   }
 
+
   /* ---------------------- RETURN UI ---------------------- */
   return (
     <div className="w-screen h-screen relative">
+
+      {/* ⭐ TEXT INPUT BOX OVER CANVAS */}
+      {textInput && (
+        <input
+          autoFocus
+          style={{
+            position: "absolute",
+            top: textInput.y,
+            left: textInput.x,
+            fontSize: "20px",
+            padding: "2px",
+            border: "1px solid #ccc",
+            background: "white",
+            zIndex: 100
+          }}
+          value={textInput.value}
+          onChange={(e) =>
+            setTextInput({ ...textInput, value: e.target.value })
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              const text = textInput.value.trim();
+              if (text) {
+                const shape = {
+                  id: uid("t_"),
+                  type: "text",
+                  x: textInput.x,
+                  y: textInput.y,
+                  text,
+                  color: strokeColor,
+                  fontSize: 20,
+                };
+
+                setShapes((x) => [...x, shape]);
+                socket.emit("shape:create", { roomId, shape });
+              }
+              setTextInput(null);
+            }
+          }}
+        />
+      )}
+
       {/* Toolbar */}
       <div className="fixed top-4 left-4 z-50">
         <div className="flex items-center gap-2 bg-white/95 shadow-lg rounded-lg p-2">
@@ -420,9 +468,8 @@ export default function Board({ roomId = "room1" }) {
               <button
                 key={c}
                 onClick={() => setStrokeColor(c)}
-                className={`w-7 h-7 rounded-full border ${
-                  strokeColor === c ? "ring-2 ring-offset-1 ring-indigo-400" : ""
-                }`}
+                className={`w-7 h-7 rounded-full border ${strokeColor === c ? "ring-2 ring-offset-1 ring-indigo-400" : ""
+                  }`}
                 style={{ backgroundColor: c }}
               />
             ))}
