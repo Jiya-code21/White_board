@@ -1,6 +1,7 @@
 # 🖌️ Whiteboard App
 
-Whiteboard App is an interactive, browser-based drawing application built with React, designed for seamless sketching, note-taking, and visual collaboration ✨. It offers a modern, intuitive interface with essential drawing tools and real-time control features.
+Whiteboard App is an interactive, browser-based drawing application built with React, designed for seamless sketching, note-taking, and visual collaboration ✨. 
+It offers a modern, intuitive interface with essential drawing tools and real-time control features.
 
 <img width="1919" height="881" alt="image" src="https://github.com/user-attachments/assets/5df2444b-f2ca-4df4-b0d6-8b073836a717" />
 
