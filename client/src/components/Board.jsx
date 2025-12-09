@@ -15,6 +15,7 @@ import { Tooltip } from "@mui/material";
 const Whiteboard = () => {
   const [tool, setTool] = useState("pen");
   const [color, setColor] = useState("#000000");
+  const [lineWidth, setLineWidth] = useState(3);   // <==== COMMON WIDTH
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const canvasRef = useRef(null);
@@ -26,38 +27,19 @@ const Whiteboard = () => {
 
   const lastPos = useRef({ x: 0, y: 0 });
 
-  // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 3;
     ctx.lineCap = "round";
     ctxRef.current = ctx;
   }, []);
 
-  // Keyboard shortcuts for undo/redo
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === "z") {
-        e.preventDefault();
-        undo();
-      }
-      if (e.ctrlKey && (e.key === "y" || (e.shiftKey && e.key === "Z"))) {
-        e.preventDefault();
-        redo();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const saveState = (clearRedo = true) => {
+  const saveState = () => {
     undoStack.current.push(canvasRef.current.toDataURL());
-    if (clearRedo) redoStack.current = [];
+    redoStack.current = [];
   };
 
   const restoreImage = (data) => {
@@ -65,24 +47,19 @@ const Whiteboard = () => {
     const canvas = canvasRef.current;
     const img = new Image();
     img.src = data;
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
+    img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   };
 
   const undo = () => {
     if (!undoStack.current.length) return;
-    const last = undoStack.current.pop();
     redoStack.current.push(canvasRef.current.toDataURL());
-    restoreImage(last);
+    restoreImage(undoStack.current.pop());
   };
 
   const redo = () => {
     if (!redoStack.current.length) return;
-    const last = redoStack.current.pop();
     undoStack.current.push(canvasRef.current.toDataURL());
-    restoreImage(last);
+    restoreImage(redoStack.current.pop());
   };
 
   const startDrawing = ({ clientX, clientY }) => {
@@ -93,10 +70,12 @@ const Whiteboard = () => {
 
   const draw = ({ clientX, clientY }) => {
     if (!isDrawing.current) return;
+
     const ctx = ctxRef.current;
 
     if (tool === "pen") {
       ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
       ctx.beginPath();
       ctx.moveTo(lastPos.current.x, lastPos.current.y);
       ctx.lineTo(clientX, clientY);
@@ -106,13 +85,12 @@ const Whiteboard = () => {
 
     if (tool === "eraser") {
       ctx.strokeStyle = "white";
-      ctx.lineWidth = 30;
+      ctx.lineWidth = lineWidth;      // <==== ERASER WIDTH
       ctx.beginPath();
       ctx.moveTo(lastPos.current.x, lastPos.current.y);
       ctx.lineTo(clientX, clientY);
       ctx.stroke();
       lastPos.current = { x: clientX, y: clientY };
-      ctx.lineWidth = 3;
     }
   };
 
@@ -120,15 +98,14 @@ const Whiteboard = () => {
     if (!isDrawing.current) return;
     const ctx = ctxRef.current;
 
+    ctx.lineWidth = lineWidth;         // shapes width
+    ctx.strokeStyle = color;
+
     if (tool === "rect") {
-      ctx.strokeStyle = color;
-      const x1 = lastPos.current.x;
-      const y1 = lastPos.current.y;
-      ctx.strokeRect(x1, y1, clientX - x1, clientY - y1);
+      ctx.strokeRect(lastPos.current.x, lastPos.current.y, clientX - lastPos.current.x, clientY - lastPos.current.y);
     }
 
     if (tool === "circle") {
-      ctx.strokeStyle = color;
       const dx = clientX - lastPos.current.x;
       const dy = clientY - lastPos.current.y;
       const r = Math.sqrt(dx * dx + dy * dy);
@@ -138,7 +115,6 @@ const Whiteboard = () => {
     }
 
     if (tool === "arrow") {
-      ctx.strokeStyle = color;
       ctx.beginPath();
       ctx.moveTo(lastPos.current.x, lastPos.current.y);
       ctx.lineTo(clientX, clientY);
@@ -146,55 +122,59 @@ const Whiteboard = () => {
     }
 
     isDrawing.current = false;
-    saveState(false);
-  };
-
-  const clearBoard = () => {
-    saveState();
-    const canvas = canvasRef.current;
-    ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
   };
 
   return (
     <>
       <div className="fixed top-4 left-4 bg-white p-3 rounded-xl shadow-xl flex gap-2 items-center z-50">
-        <Tooltip title="Pen">
-          <button onClick={() => setTool("pen")} className="p-2"><EditRounded /></button>
-        </Tooltip>
-        <Tooltip title="Eraser">
-          <button onClick={() => setTool("eraser")} className="p-2"><AutoFixOffRounded /></button>
-        </Tooltip>
-        <Tooltip title="Rectangle">
-          <button onClick={() => setTool("rect")} className="p-2"><Crop169Rounded /></button>
-        </Tooltip>
-        <Tooltip title="Circle">
-          <button onClick={() => setTool("circle")} className="p-2"><CircleRounded /></button>
-        </Tooltip>
-        <Tooltip title="Arrow">
-          <button onClick={() => setTool("arrow")} className="p-2"><TrendingFlatRounded /></button>
-        </Tooltip>
-        <Tooltip title="Move">
-          <button onClick={() => setTool("move")} className="p-2"><PanToolAltRounded /></button>
-        </Tooltip>
-        <Tooltip title="Color">
-          <button onClick={() => setShowColorPicker(!showColorPicker)} className="p-2"><ColorLensRounded /></button>
-        </Tooltip>
-        <Tooltip title="Undo">
-          <button onClick={undo} className="p-2"><UndoRounded /></button>
-        </Tooltip>
-        <Tooltip title="Redo">
-          <button onClick={redo} className="p-2"><RedoRounded /></button>
-        </Tooltip>
-        <Tooltip title="Clear">
-          <button onClick={clearBoard} className="p-2"><DeleteSweepRounded /></button>
-        </Tooltip>
-      </div>
 
-      {showColorPicker && (
-        <div className="fixed top-20 left-4 bg-white p-3 shadow-xl rounded-xl z-50">
-          <ChromePicker color={color} onChange={(c) => setColor(c.hex)} />
-        </div>
-      )}
+        {/* ===== WIDTH CONTROL (common) ===== */}
+        <select
+          value={lineWidth}
+          onChange={(e) => setLineWidth(Number(e.target.value))}
+          className="border p-1 rounded-lg"
+        >
+          <option value={2}>2 px</option>
+          <option value={5}>5 px</option>
+          <option value={10}>10 px</option>
+          <option value={20}>20 px</option>
+          <option value={30}>30 px</option>
+        </select>
+
+        <Tooltip title="Pen">
+          <button onClick={() => setTool("pen")} className={`p-2 rounded-lg ${tool === "pen" ? "border-2 border-indigo-500" : ""}`}>
+            <EditRounded />
+          </button>
+        </Tooltip>
+
+        <Tooltip title="Eraser">
+          <button onClick={() => setTool("eraser")} className={`p-2 rounded-lg ${tool === "eraser" ? "border-2 border-indigo-500" : ""}`}>
+            <AutoFixOffRounded />
+          </button>
+        </Tooltip>
+
+        <Tooltip title="Rectangle">
+          <button onClick={() => setTool("rect")} className={`p-2 rounded-lg ${tool === "rect" ? "border-2 border-indigo-500" : ""}`}>
+            <Crop169Rounded />
+          </button>
+        </Tooltip>
+
+        <Tooltip title="Circle">
+          <button onClick={() => setTool("circle")} className={`p-2 rounded-lg ${tool === "circle" ? "border-2 border-indigo-500" : ""}`}>
+            <CircleRounded />
+          </button>
+        </Tooltip>
+
+        <Tooltip title="Arrow">
+          <button onClick={() => setTool("arrow")} className={`p-2 rounded-lg ${tool === "arrow" ? "border-2 border-indigo-500" : ""}`}>
+            <TrendingFlatRounded />
+          </button>
+        </Tooltip>
+
+        <Tooltip title="Undo"><button onClick={undo}><UndoRounded /></button></Tooltip>
+        <Tooltip title="Redo"><button onClick={redo}><RedoRounded /></button></Tooltip>
+        <Tooltip title="Clear"><button onClick={() => ctxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)}><DeleteSweepRounded /></button></Tooltip>
+      </div>
 
       <canvas
         ref={canvasRef}
