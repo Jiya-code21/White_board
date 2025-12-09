@@ -11,7 +11,7 @@ import CircleRounded from "@mui/icons-material/CircleRounded";
 import TrendingFlatRounded from "@mui/icons-material/TrendingFlatRounded";
 import AutoFixOffRounded from "@mui/icons-material/AutoFixOffRounded";
 import { Tooltip } from "@mui/material";
-
+//
 const Whiteboard = () => {
   const [tool, setTool] = useState("pen");
   const [color, setColor] = useState("#000000");
@@ -186,5 +186,6 @@ const Whiteboard = () => {
     </>
   );
 };
+
 
 export default Whiteboard;
