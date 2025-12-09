@@ -11,11 +11,11 @@ import CircleRounded from "@mui/icons-material/CircleRounded";
 import TrendingFlatRounded from "@mui/icons-material/TrendingFlatRounded";
 import AutoFixOffRounded from "@mui/icons-material/AutoFixOffRounded";
 import { Tooltip } from "@mui/material";
-//
+
 const Whiteboard = () => {
   const [tool, setTool] = useState("pen");
   const [color, setColor] = useState("#000000");
-  const [lineWidth, setLineWidth] = useState(3);   // <==== COMMON WIDTH
+  const [lineWidth, setLineWidth] = useState(3); // COMMON WIDTH
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const canvasRef = useRef(null);
@@ -85,7 +85,7 @@ const Whiteboard = () => {
 
     if (tool === "eraser") {
       ctx.strokeStyle = "white";
-      ctx.lineWidth = lineWidth;      // <==== ERASER WIDTH
+      ctx.lineWidth = lineWidth;
       ctx.beginPath();
       ctx.moveTo(lastPos.current.x, lastPos.current.y);
       ctx.lineTo(clientX, clientY);
@@ -98,11 +98,16 @@ const Whiteboard = () => {
     if (!isDrawing.current) return;
     const ctx = ctxRef.current;
 
-    ctx.lineWidth = lineWidth;         // shapes width
+    ctx.lineWidth = lineWidth;
     ctx.strokeStyle = color;
 
     if (tool === "rect") {
-      ctx.strokeRect(lastPos.current.x, lastPos.current.y, clientX - lastPos.current.x, clientY - lastPos.current.y);
+      ctx.strokeRect(
+        lastPos.current.x,
+        lastPos.current.y,
+        clientX - lastPos.current.x,
+        clientY - lastPos.current.y
+      );
     }
 
     if (tool === "circle") {
@@ -127,8 +132,8 @@ const Whiteboard = () => {
   return (
     <>
       <div className="fixed top-4 left-4 bg-white p-3 rounded-xl shadow-xl flex gap-2 items-center z-50">
-
-        {/* ===== WIDTH CONTROL (common) ===== */}
+        
+        {/* WIDTH SELECTOR */}
         <select
           value={lineWidth}
           onChange={(e) => setLineWidth(Number(e.target.value))}
@@ -141,39 +146,106 @@ const Whiteboard = () => {
           <option value={30}>30 px</option>
         </select>
 
+        {/* COLOR PICKER BUTTON */}
+        <Tooltip title="Color">
+          <button
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            className="p-2 rounded-lg"
+          >
+            <ColorLensRounded style={{ color }} />
+          </button>
+        </Tooltip>
+
+        {showColorPicker && (
+          <div className="absolute top-20 left-4 z-50">
+            <ChromePicker
+              color={color}
+              onChange={(c) => setColor(c.hex)}
+            />
+          </div>
+        )}
+
         <Tooltip title="Pen">
-          <button onClick={() => setTool("pen")} className={`p-2 rounded-lg ${tool === "pen" ? "border-2 border-indigo-500" : ""}`}>
+          <button
+            onClick={() => setTool("pen")}
+            className={`p-2 rounded-lg ${
+              tool === "pen" ? "border-2 border-indigo-500" : ""
+            }`}
+          >
             <EditRounded />
           </button>
         </Tooltip>
 
         <Tooltip title="Eraser">
-          <button onClick={() => setTool("eraser")} className={`p-2 rounded-lg ${tool === "eraser" ? "border-2 border-indigo-500" : ""}`}>
+          <button
+            onClick={() => setTool("eraser")}
+            className={`p-2 rounded-lg ${
+              tool === "eraser" ? "border-2 border-indigo-500" : ""
+            }`}
+          >
             <AutoFixOffRounded />
           </button>
         </Tooltip>
 
         <Tooltip title="Rectangle">
-          <button onClick={() => setTool("rect")} className={`p-2 rounded-lg ${tool === "rect" ? "border-2 border-indigo-500" : ""}`}>
+          <button
+            onClick={() => setTool("rect")}
+            className={`p-2 rounded-lg ${
+              tool === "rect" ? "border-2 border-indigo-500" : ""
+            }`}
+          >
             <Crop169Rounded />
           </button>
         </Tooltip>
 
         <Tooltip title="Circle">
-          <button onClick={() => setTool("circle")} className={`p-2 rounded-lg ${tool === "circle" ? "border-2 border-indigo-500" : ""}`}>
+          <button
+            onClick={() => setTool("circle")}
+            className={`p-2 rounded-lg ${
+              tool === "circle" ? "border-2 border-indigo-500" : ""
+            }`}
+          >
             <CircleRounded />
           </button>
         </Tooltip>
 
         <Tooltip title="Arrow">
-          <button onClick={() => setTool("arrow")} className={`p-2 rounded-lg ${tool === "arrow" ? "border-2 border-indigo-500" : ""}`}>
+          <button
+            onClick={() => setTool("arrow")}
+            className={`p-2 rounded-lg ${
+              tool === "arrow" ? "border-2 border-indigo-500" : ""
+            }`}
+          >
             <TrendingFlatRounded />
           </button>
         </Tooltip>
 
-        <Tooltip title="Undo"><button onClick={undo}><UndoRounded /></button></Tooltip>
-        <Tooltip title="Redo"><button onClick={redo}><RedoRounded /></button></Tooltip>
-        <Tooltip title="Clear"><button onClick={() => ctxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)}><DeleteSweepRounded /></button></Tooltip>
+        <Tooltip title="Undo">
+          <button onClick={undo}>
+            <UndoRounded />
+          </button>
+        </Tooltip>
+
+        <Tooltip title="Redo">
+          <button onClick={redo}>
+            <RedoRounded />
+          </button>
+        </Tooltip>
+
+        <Tooltip title="Clear">
+          <button
+            onClick={() =>
+              ctxRef.current.clearRect(
+                0,
+                0,
+                canvasRef.current.width,
+                canvasRef.current.height
+              )
+            }
+          >
+            <DeleteSweepRounded />
+          </button>
+        </Tooltip>
       </div>
 
       <canvas
@@ -186,6 +258,5 @@ const Whiteboard = () => {
     </>
   );
 };
-
 
 export default Whiteboard;
