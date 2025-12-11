@@ -9,7 +9,7 @@ import Crop169Rounded from "@mui/icons-material/Crop169Rounded";
 import CircleRounded from "@mui/icons-material/CircleRounded";
 import TrendingFlatRounded from "@mui/icons-material/TrendingFlatRounded";
 import AutoFixOffRounded from "@mui/icons-material/AutoFixOffRounded";
-import TextFieldsRounded from "@mui/icons-material/TextFieldsRounded"; // ⭐ ADDED
+import TextFieldsRounded from "@mui/icons-material/TextFieldsRounded";
 import { Tooltip } from "@mui/material";
 
 const Whiteboard = () => {
@@ -159,7 +159,7 @@ const Whiteboard = () => {
     <>
       <div className="fixed top-4 left-4 bg-white p-3 rounded-xl shadow-xl flex gap-2 items-center z-50">
 
-        {/* WIDTH SELECTOR */}
+        {/* Width selector */}
         <select
           value={lineWidth}
           onChange={(e) => setLineWidth(Number(e.target.value))}
@@ -172,7 +172,7 @@ const Whiteboard = () => {
           <option value={30}>30 px</option>
         </select>
 
-        {/* COLOR PICKER */}
+        {/* Color picker*/}
         <Tooltip title="Color">
           <button
             onClick={() => setShowColorPicker(!showColorPicker)}
@@ -188,7 +188,7 @@ const Whiteboard = () => {
           </div>
         )}
 
-        {/* PEN */}
+        {/* Pen */}
         <Tooltip title="Pen">
           <button
             onClick={() => setTool("pen")}
@@ -199,7 +199,7 @@ const Whiteboard = () => {
           </button>
         </Tooltip>
 
-        {/* ERASER */}
+        {/* Eraser */}
         <Tooltip title="Eraser">
           <button
             onClick={() => setTool("eraser")}
@@ -210,7 +210,7 @@ const Whiteboard = () => {
           </button>
         </Tooltip>
 
-        {/* RECTANGLE */}
+        {/* Rectangle */}
         <Tooltip title="Rectangle">
           <button
             onClick={() => setTool("rect")}
@@ -221,7 +221,7 @@ const Whiteboard = () => {
           </button>
         </Tooltip>
 
-        {/* CIRCLE */}
+        {/* Circle */}
         <Tooltip title="Circle">
           <button
             onClick={() => setTool("circle")}
@@ -232,7 +232,7 @@ const Whiteboard = () => {
           </button>
         </Tooltip>
 
-        {/* ARROW */}
+        {/* Arrow */}
         <Tooltip title="Arrow">
           <button
             onClick={() => setTool("arrow")}
@@ -243,7 +243,7 @@ const Whiteboard = () => {
           </button>
         </Tooltip>
 
-        {/* ⭐ TEXT TOOL BUTTON ADDED */}
+        {/* Text tool button added */}
         <Tooltip title="Text">
           <button
             onClick={() => setTool("text")}
@@ -253,21 +253,21 @@ const Whiteboard = () => {
           </button>
         </Tooltip>
 
-        {/* UNDO */}
+        {/* Undo */}
         <Tooltip title="Undo">
           <button onClick={undo}>
             <UndoRounded />
           </button>
         </Tooltip>
 
-        {/* REDO */}
+        {/* Redo */}
         <Tooltip title="Redo">
           <button onClick={redo}>
             <RedoRounded />
           </button>
         </Tooltip>
 
-        {/* CLEAR */}
+        {/* Clear*/}
         <Tooltip title="Clear">
           <button
             onClick={() =>
@@ -284,7 +284,7 @@ const Whiteboard = () => {
         </Tooltip>
       </div>
 
-      {/* TEXT INPUT BOX */}
+      {/* Text input box */}
       {showTextInput && (
         <input
           autoFocus
