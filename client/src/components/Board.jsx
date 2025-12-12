@@ -32,8 +32,8 @@ const Whiteboard = () => {
   // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = 3000; // large width for scrolling
+    canvas.height = 2000; // large height for scrolling
 
     const ctx = canvas.getContext("2d");
     ctx.lineCap = "round";
@@ -43,25 +43,19 @@ const Whiteboard = () => {
   // Keyboard shortcuts: undo/redo
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Undo: Ctrl + Z
       if ((e.ctrlKey || e.metaKey) && e.key === "z") {
         e.preventDefault();
         undo();
       }
-
-      // Redo: Ctrl + Y
       if ((e.ctrlKey || e.metaKey) && e.key === "y") {
         e.preventDefault();
         redo();
       }
-
-      // Mac shortcut for redo: Ctrl + Shift + Z
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "Z") {
         e.preventDefault();
         redo();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
@@ -97,7 +91,6 @@ const Whiteboard = () => {
       setShowTextInput(true);
       return;
     }
-
     saveState();
     isDrawing.current = true;
     lastPos.current = { x: clientX, y: clientY };
@@ -105,9 +98,7 @@ const Whiteboard = () => {
 
   const draw = ({ clientX, clientY }) => {
     if (!isDrawing.current) return;
-
     const ctx = ctxRef.current;
-
     if (tool === "pen") {
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth;
@@ -117,7 +108,6 @@ const Whiteboard = () => {
       ctx.stroke();
       lastPos.current = { x: clientX, y: clientY };
     }
-
     if (tool === "eraser") {
       ctx.strokeStyle = "white";
       ctx.lineWidth = lineWidth;
@@ -131,11 +121,9 @@ const Whiteboard = () => {
 
   const stopDrawing = ({ clientX, clientY }) => {
     if (!isDrawing.current) return;
-
     const ctx = ctxRef.current;
     ctx.lineWidth = lineWidth;
     ctx.strokeStyle = color;
-
     if (tool === "rect") {
       ctx.strokeRect(
         lastPos.current.x,
@@ -144,7 +132,6 @@ const Whiteboard = () => {
         clientY - lastPos.current.y
       );
     }
-
     if (tool === "circle") {
       const dx = clientX - lastPos.current.x;
       const dy = clientY - lastPos.current.y;
@@ -153,14 +140,12 @@ const Whiteboard = () => {
       ctx.arc(lastPos.current.x, lastPos.current.y, r, 0, Math.PI * 2);
       ctx.stroke();
     }
-
     if (tool === "arrow") {
       ctx.beginPath();
       ctx.moveTo(lastPos.current.x, lastPos.current.y);
       ctx.lineTo(clientX, clientY);
       ctx.stroke();
     }
-
     isDrawing.current = false;
   };
 
@@ -169,13 +154,11 @@ const Whiteboard = () => {
       setShowTextInput(false);
       return;
     }
-
     saveState();
     const ctx = ctxRef.current;
     ctx.fillStyle = color;
     ctx.font = `${lineWidth * 6}px Arial`;
     ctx.fillText(inputText, textPos.x, textPos.y);
-
     setInputText("");
     setShowTextInput(false);
   };
@@ -183,7 +166,6 @@ const Whiteboard = () => {
   const downloadImage = () => {
     const canvas = canvasRef.current;
     const url = canvas.toDataURL("image/png");
-
     const link = document.createElement("a");
     link.href = url;
     link.download = "whiteboard_drawing.png";
@@ -325,14 +307,18 @@ const Whiteboard = () => {
         />
       )}
 
-      {/* Canvas */}
-      <canvas
-        ref={canvasRef}
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        className="w-full h-full absolute top-0 left-0 bg-white"
-      />
+      {/* Scrollable canvas container */}
+      <div className="w-full h-full overflow-auto absolute top-0 left-0">
+        <div style={{ width: 3000, height: 2000 }}>
+          <canvas
+            ref={canvasRef}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            className="bg-white"
+          />
+        </div>
+      </div>
     </>
   );
 };
