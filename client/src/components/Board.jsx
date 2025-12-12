@@ -29,6 +29,7 @@ const Whiteboard = () => {
   const redoStack = useRef([]);
   const lastPos = useRef({ x: 0, y: 0 });
 
+  // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
@@ -37,6 +38,32 @@ const Whiteboard = () => {
     const ctx = canvas.getContext("2d");
     ctx.lineCap = "round";
     ctxRef.current = ctx;
+  }, []);
+
+  // Keyboard shortcuts: undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Undo: Ctrl + Z
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault();
+        undo();
+      }
+
+      // Redo: Ctrl + Y
+      if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+        e.preventDefault();
+        redo();
+      }
+
+      // Mac shortcut for redo: Ctrl + Shift + Z
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "Z") {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const saveState = () => {
@@ -167,7 +194,6 @@ const Whiteboard = () => {
     <>
       {/* Left Toolbar */}
       <div className="fixed top-4 left-4 bg-white p-3 rounded-xl shadow-xl flex gap-2 items-center z-50">
-
         <select
           value={lineWidth}
           onChange={(e) => setLineWidth(Number(e.target.value))}
