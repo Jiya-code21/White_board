@@ -306,7 +306,7 @@ const Whiteboard = () => {
       {/* Right Download Button */}
       <button
         onClick={downloadImage}
-        className="fixed top-4 right-8 bg-indigo-500 text-white p-3 rounded-full shadow-lg z-50 hover:bg-indigo-600 transition-all duration-200"
+        className="fixed top-4 right-8 bg-yellow-500 text-white p-3 rounded-full shadow-lg z-50 hover:bg-indigo-600 transition-all duration-200"
         title="Download Image"
       >
         <DownloadRounded style={{ fontSize: "28px" }} />
