@@ -10,6 +10,7 @@ import CircleRounded from "@mui/icons-material/CircleRounded";
 import TrendingFlatRounded from "@mui/icons-material/TrendingFlatRounded";
 import AutoFixOffRounded from "@mui/icons-material/AutoFixOffRounded";
 import TextFieldsRounded from "@mui/icons-material/TextFieldsRounded";
+import DownloadRounded from "@mui/icons-material/DownloadRounded";
 import { Tooltip } from "@mui/material";
 
 const Whiteboard = () => {
@@ -17,7 +18,6 @@ const Whiteboard = () => {
   const [color, setColor] = useState("#000000");
   const [lineWidth, setLineWidth] = useState(3);
   const [showColorPicker, setShowColorPicker] = useState(false);
-
   const [showTextInput, setShowTextInput] = useState(false);
   const [textPos, setTextPos] = useState({ x: 0, y: 0 });
   const [inputText, setInputText] = useState("");
@@ -25,10 +25,8 @@ const Whiteboard = () => {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const isDrawing = useRef(false);
-
   const undoStack = useRef([]);
   const redoStack = useRef([]);
-
   const lastPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -155,11 +153,21 @@ const Whiteboard = () => {
     setShowTextInput(false);
   };
 
+  const downloadImage = () => {
+    const canvas = canvasRef.current;
+    const url = canvas.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "whiteboard_drawing.png";
+    link.click();
+  };
+
   return (
     <>
+      {/* Left Toolbar */}
       <div className="fixed top-4 left-4 bg-white p-3 rounded-xl shadow-xl flex gap-2 items-center z-50">
 
-        {/* Width selector */}
         <select
           value={lineWidth}
           onChange={(e) => setLineWidth(Number(e.target.value))}
@@ -172,7 +180,6 @@ const Whiteboard = () => {
           <option value={30}>30 px</option>
         </select>
 
-        {/* Color picker*/}
         <Tooltip title="Color">
           <button
             onClick={() => setShowColorPicker(!showColorPicker)}
@@ -188,62 +195,51 @@ const Whiteboard = () => {
           </div>
         )}
 
-        {/* Pen */}
         <Tooltip title="Pen">
           <button
             onClick={() => setTool("pen")}
-            className={`p-2 rounded-lg ${tool === "pen" ? "border-2 border-indigo-500" : ""
-              }`}
+            className={`p-2 rounded-lg ${tool === "pen" ? "border-2 border-indigo-500" : ""}`}
           >
             <EditRounded />
           </button>
         </Tooltip>
 
-        {/* Eraser */}
         <Tooltip title="Eraser">
           <button
             onClick={() => setTool("eraser")}
-            className={`p-2 rounded-lg ${tool === "eraser" ? "border-2 border-indigo-500" : ""
-              }`}
+            className={`p-2 rounded-lg ${tool === "eraser" ? "border-2 border-indigo-500" : ""}`}
           >
             <AutoFixOffRounded />
           </button>
         </Tooltip>
 
-        {/* Rectangle */}
         <Tooltip title="Rectangle">
           <button
             onClick={() => setTool("rect")}
-            className={`p-2 rounded-lg ${tool === "rect" ? "border-2 border-indigo-500" : ""
-              }`}
+            className={`p-2 rounded-lg ${tool === "rect" ? "border-2 border-indigo-500" : ""}`}
           >
             <Crop169Rounded />
           </button>
         </Tooltip>
 
-        {/* Circle */}
         <Tooltip title="Circle">
           <button
             onClick={() => setTool("circle")}
-            className={`p-2 rounded-lg ${tool === "circle" ? "border-2 border-indigo-500" : ""
-              }`}
+            className={`p-2 rounded-lg ${tool === "circle" ? "border-2 border-indigo-500" : ""}`}
           >
             <CircleRounded />
           </button>
         </Tooltip>
 
-        {/* Arrow */}
         <Tooltip title="Arrow">
           <button
             onClick={() => setTool("arrow")}
-            className={`p-2 rounded-lg ${tool === "arrow" ? "border-2 border-indigo-500" : ""
-              }`}
+            className={`p-2 rounded-lg ${tool === "arrow" ? "border-2 border-indigo-500" : ""}`}
           >
             <TrendingFlatRounded />
           </button>
         </Tooltip>
 
-        {/* Text tool button added */}
         <Tooltip title="Text">
           <button
             onClick={() => setTool("text")}
@@ -253,21 +249,18 @@ const Whiteboard = () => {
           </button>
         </Tooltip>
 
-        {/* Undo */}
         <Tooltip title="Undo">
           <button onClick={undo}>
             <UndoRounded />
           </button>
         </Tooltip>
 
-        {/* Redo */}
         <Tooltip title="Redo">
           <button onClick={redo}>
             <RedoRounded />
           </button>
         </Tooltip>
 
-        {/* Clear*/}
         <Tooltip title="Clear">
           <button
             onClick={() =>
@@ -284,6 +277,15 @@ const Whiteboard = () => {
         </Tooltip>
       </div>
 
+      {/* Right Download Button */}
+      <button
+        onClick={downloadImage}
+        className="fixed top-4 right-8 bg-indigo-500 text-white p-3 rounded-full shadow-lg z-50 hover:bg-indigo-600 transition-all duration-200"
+        title="Download Image"
+      >
+        <DownloadRounded style={{ fontSize: "28px" }} />
+      </button>
+
       {/* Text input box */}
       {showTextInput && (
         <input
@@ -297,6 +299,7 @@ const Whiteboard = () => {
         />
       )}
 
+      {/* Canvas */}
       <canvas
         ref={canvasRef}
         onMouseDown={startDrawing}
