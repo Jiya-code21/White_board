@@ -8,7 +8,8 @@ It offers a modern, intuitive interface with essential drawing tools and real-ti
 
 # ✨ Key Features
 
-🖊️ Drawing Tools: Pen, Eraser, Rectangle, Circle, and Arrow
+##🖊️ Drawing Tools: Pen, Eraser, Rectangle, Circle, and Arrow
+
 
 🎨 Customizable Appearance: Adjustable line width & dynamic color selection via Chrome color picker
 
